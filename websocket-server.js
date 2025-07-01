@@ -1,13 +1,14 @@
 // server.js
 import { WebSocketServer } from "ws";
+import chalk from "chalk";
 
 const wss = new WebSocketServer({ port: 8080 });
 const clients = new Map(); // Mapeamos ws -> username
 
-console.log("Servidor WebSocket en ws://localhost:8080");
+console.log(chalk.blue("🌐 Servidor WebSocket en ws://localhost:8080"));
 
 wss.on("connection", (ws) => {
-  console.log("Nuevo cliente conectado.");
+  console.log(chalk.yellow("🔌 Nuevo cliente conectado."));
   ws.send("Bienvenido al chat. Por favor, ingresa tu nombre de usuario:");
 
   let isRegistered = false;
@@ -19,14 +20,16 @@ wss.on("connection", (ws) => {
       // Primer mensaje: lo tomamos como nombre de usuario
       clients.set(ws, text);
       isRegistered = true;
-      ws.send(`Conectado al chat como "${text}".`);
+      const confirmMsg = `Conectado al chat como "${text}".`;
+      ws.send(confirmMsg);
+      console.log(chalk.green(`✅ ${text} se ha registrado.`));
       return;
     }
 
     const username = clients.get(ws) || "Anónimo";
     const fullMessage = `${username}: ${text}`;
 
-    console.log("Mensaje recibido:", fullMessage);
+    console.log(chalk.cyan(`💬 ${fullMessage}`));
 
     // Reenviar a todos los demás clientes
     for (const [client, _] of clients) {
@@ -38,7 +41,7 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     const username = clients.get(ws) || "Un usuario";
-    console.log(`Cliente desconectado: ${username}`);
+    console.log(chalk.red(`❌ Cliente desconectado: ${username}`));
     clients.delete(ws);
   });
 });
